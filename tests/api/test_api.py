@@ -3,7 +3,7 @@
 
 from faker import Faker
 
-from diagral_eone.api import DiagralEOneApi
+from diagral_eone_api.client import DiagralEOneApi
 
 class TestApi:
     """API test."""
