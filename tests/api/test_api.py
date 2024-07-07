@@ -15,4 +15,3 @@ class TestApi:
         diagral_api = DiagralEOneApi(self.username, self.password, None)
         assert diagral_api.username == self.username
         assert diagral_api.password == self.password
-    
