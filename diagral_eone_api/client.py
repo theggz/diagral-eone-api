@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import ssl
 from typing import Any
 
 from aiohttp import ClientConnectorError, ClientResponseError, ClientSession
@@ -52,12 +53,13 @@ class DiagralEOneApi:
                 url,
                 json=data,
                 raise_for_status=True,
-                timeout=HTTP_CALL_TIMEOUT
+                timeout=HTTP_CALL_TIMEOUT,
+                ssl=ssl.SSLContext()
             ) as response:
                 response_json = await response.json()
         except ClientConnectorError as err:
             raise CloudConnectionError(err) from err
-        except ClientResponseError as err:  # TODO: check if message and details properties in API response are retrieved in exception
+        except ClientResponseError as err:
             if err.status == 400:  # Bad request
                 raise BadRequestError(err) from err
             if err.status == 401:  # Unauthorized
