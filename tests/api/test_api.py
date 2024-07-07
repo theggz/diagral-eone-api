@@ -2,7 +2,8 @@
 """API test class."""
 
 from faker import Faker
-from diagral_eone.api.api import DiagralEOneApi
+
+from diagral_eone.api import DiagralEOneApi
 
 class TestApi:
     """API test."""
