@@ -5,36 +5,46 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from .exceptions import MissingFieldResponseError
 
 @dataclass
 class LoginResponse:
     """Describe the Login response."""
-    session_id: str | None
-    diagral_id: str | None
-    crypted_password: str | None
-    username: str | None
-    gender: str | None
-    first_name: str | None
-    last_name: str | None
-    mobile: str | None
+    session_id: str
+    diagral_id: str
+    crypted_password: Optional[str]
+    username: Optional[str]
+    gender: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    mobile: Optional[str]
     locale: Optional[str]
-    country: str | None
-    postal_code: str | None
-    city: str | None
-    address: str | None
-    newsletter: bool | None
+    country: Optional[str]
+    postal_code: Optional[str]
+    city: Optional[str]
+    address: Optional[str]
+    newsletter: bool
     partners: Optional[str]
-    accepted_cgu: bool | None
-    cgu_url: str | None
-    user_type: str | None
-    expires_in: int | None
+    accepted_cgu: bool
+    cgu_url: Optional[str]
+    user_type: Optional[str]
+    expires_in_ms: int
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'LoginResponse':
         """Convert the dictionnary to response object."""
+
+        session_id=data.get("sessionId")
+        diagral_id=data.get("diagralId")
+
+        if session_id is None:
+            raise MissingFieldResponseError("Field 'sessionId' is missing in response.")
+        if diagral_id is None:
+            raise MissingFieldResponseError("Field 'diagralId' is missing in response.")
+
         return LoginResponse(
-            session_id=data.get("sessionId"),
-            diagral_id=data.get("diagralId"),
+            session_id=session_id,
+            diagral_id=diagral_id,
             crypted_password=data.get("cryptedPassword"),
             username=data.get("username"),
             gender=data.get("gender"),
@@ -46,47 +56,62 @@ class LoginResponse:
             postal_code=data.get("postalCode"),
             city=data.get("city"),
             address=data.get("address"),
-            newsletter=data.get("newsletter", ),
+            newsletter=data.get("newsletter", False),
             partners=data.get("partners"),
-            accepted_cgu=data.get("acceptedCGU"),
+            accepted_cgu=data.get("acceptedCGU", True),
             cgu_url=data.get("cguUrl"),
             user_type=data.get("userType"),
-            expires_in=data.get("expiresIn")
+            expires_in_ms=data.get("expiresIn", 3600000)
         )
 
 @dataclass
 class System:
     """Describe a Diagral system."""
-    name: str | None
-    id: int | None
-    role: int | None
-    installation_complete: bool | None
-    standalone: bool | None
+    name: Optional[str]
+    id: int
+    role: int
+    installation_complete: bool
+    standalone: bool
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'System':
         """Convert the dictionnary to response object."""
+
+        role=data.get("role")
+        config_id=data.get("id")
+
+        if role is None:
+            raise MissingFieldResponseError("Field 'role' is missing in response.")
+        if config_id is None:
+            raise MissingFieldResponseError("Field 'id' is missing in response.")
+
         return System(
             name=data.get("name"),
-            id=data.get("id"),
-            role=data.get("role"),
-            installation_complete=data.get("installationComplete"),
-            standalone=data.get("standalone")
+            id=config_id,
+            role=role,
+            installation_complete=data.get("installationComplete", True),
+            standalone=data.get("standalone", False)
         )
 
 @dataclass
 class GetSystemsResponse:
     """Describe the GetSystems response."""
-    diagral_id: str | None
+    diagral_id: str
     systems: List[System] = field(default_factory=list)
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'GetSystemsResponse':
         """Convert the dictionnary to response object."""
+
+        diagral_id=data.get("diagralId")
+
+        if diagral_id is None:
+            raise MissingFieldResponseError("Field 'diagralId' is missing in response.")
+
         systems_data = data.get("systems", [])
         systems = [System.from_dict(system) for system in systems_data]
         return GetSystemsResponse(
-            diagral_id=data.get("diagralId"),
+            diagral_id=diagral_id,
             systems=systems
         )
 
@@ -113,28 +138,43 @@ class Rights:
 @dataclass
 class GetConfigurationResponse:
     """Describe the GetConfiguration response."""
-    transmitter_id: str | None
-    central_id: str | None
-    installation_complete: bool | None
-    name: str | None
-    role: int | None
+    transmitter_id: str
+    central_id: str
+    installation_complete: bool
+    name: Optional[str]
+    role: int
     rights: Rights
-    id: int | None
-    standalone: bool | None
+    id: int
+    standalone: bool
     gprs_phone: Optional[str]
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'GetConfigurationResponse':
         """Convert the dictionnary to response object."""
+
+        transmitter_id=data.get("transmitterId")
+        central_id=data.get("centralId")
+        role=data.get("role")
+        config_id=data.get("id")
+
+        if transmitter_id is None:
+            raise MissingFieldResponseError("Field 'transmitterId' is missing in response.")
+        if central_id is None:
+            raise MissingFieldResponseError("Field 'centralId' is missing in response.")
+        if role is None:
+            raise MissingFieldResponseError("Field 'role' is missing in response.")
+        if config_id is None:
+            raise MissingFieldResponseError("Field 'id' is missing in response.")
+        
         return GetConfigurationResponse(
-            transmitter_id=data.get("transmitterId"),
-            central_id=data.get("centralId"),
-            installation_complete=data.get("installationComplete"),
+            transmitter_id=transmitter_id,
+            central_id=central_id,
+            installation_complete=data.get("installationComplete", True),
             name=data.get("name"),
-            role=data.get("role"),
+            role=role,
             rights=Rights.from_dict(data.get("rights", {})),
-            id=data.get("id"),
-            standalone=data.get("standalone"),
+            id=config_id,
+            standalone=data.get("standalone", False),
             gprs_phone=data.get("gprsPhone")
         )
 
@@ -153,10 +193,10 @@ class IsConnectedResponse:
 @dataclass
 class Versions:
     """Describe the system hardware versions."""
-    box: str | None
-    box_radio: str | None
-    plug_knx: str | None
-    raw_versions: str | None
+    box: Optional[str]
+    box_radio: Optional[str]
+    plug_knx: Optional[str]
+    raw_versions: Optional[str]
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'Versions':
@@ -172,28 +212,40 @@ class Versions:
 class ConnectResponse:
     """Describe the Connect response."""
     message: Optional[str]
-    ttm_session_id: str | None
-    system_state: str | None
+    ttm_session_id: str
+    system_state: str
     groups: List[str]
     group_list: List[str]
     gprs_connection: Optional[str]
-    status: str | None
+    status: str
     versions: Versions
-    connected_user_type: str | None
-    code_index: int | None
+    connected_user_type: Optional[str]
+    code_index: Optional[int]
     user_rights_configuration: Optional[str]
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'ConnectResponse':
         """Convert the dictionnary to response object."""
+
+        ttm_session_id=data.get("ttmSessionId")
+        system_state=data.get("systemState")
+        status=data.get("status")
+
+        if ttm_session_id is None:
+            raise MissingFieldResponseError("Field 'ttmSessionId' is missing in response.")
+        if system_state is None:
+            raise MissingFieldResponseError("Field 'systemState' is missing in response.")
+        if status is None:
+            raise MissingFieldResponseError("Field 'status' is missing in response.")
+
         return ConnectResponse(
             message=data.get("message"),
-            ttm_session_id=data.get("ttmSessionId"),
-            system_state=data.get("systemState"),
+            ttm_session_id=ttm_session_id,
+            system_state=system_state,
             groups=data.get("groups", []),
             group_list=data.get("groupList", []),
             gprs_connection=data.get("gprsConnection"),
-            status=data.get("status"),
+            status=status,
             versions=Versions.from_dict(data.get("versions", {})),
             connected_user_type=data.get("connectedUserType"),
             code_index=data.get("codeIndex"),
@@ -204,17 +256,23 @@ class ConnectResponse:
 class GetSystemStateResponse:
     """Describe the GetSystemState response."""
     message: Optional[str]
-    system_state: str | None
+    system_state: str
     groups: List[str]
-    defaults: str | None
-    command_status: str | None
+    defaults: Optional[str]
+    command_status: Optional[str]
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'GetSystemStateResponse':
         """Convert the dictionnary to response object."""
+
+        system_state = data.get("systemState")
+
+        if system_state is None:
+            raise MissingFieldResponseError("Field 'systemState' is missing in response.")
+
         return GetSystemStateResponse(
             message=data.get("message"),
-            system_state=data.get("systemState"),
+            system_state=system_state,
             groups=data.get("groups", []),
             defaults=data.get("defaults"),
             command_status=data.get("commandStatus")
@@ -223,10 +281,10 @@ class GetSystemStateResponse:
 @dataclass
 class GetDevicesResponse:
     """Describe the GetDevices response."""
-    index: str | None
-    name: str | None
-    type: str | None
-    application: str | None
+    index: Optional[str]
+    name: Optional[str]
+    type: Optional[str]
+    application: Optional[str]
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'GetDevicesResponse':
@@ -241,19 +299,28 @@ class GetDevicesResponse:
 @dataclass
 class CentralStatus:
     """The alarm central status."""
-    main_power_supply_alert: bool | None
-    secondary_power_supply_alert: bool | None
-    default_media_alert: bool | None
-    autoprotection_mechanical_alert: bool | None
-    autoprotection_wired_alert: bool | None
-    radio_alert: bool | None
-    active_groups: Dict[int, bool] | None
-    system_state: int | None
-    system_state_text: str | None
+    main_power_supply_alert: Optional[bool]
+    secondary_power_supply_alert: Optional[bool]
+    default_media_alert: Optional[bool]
+    autoprotection_mechanical_alert: Optional[bool]
+    autoprotection_wired_alert: Optional[bool]
+    radio_alert: Optional[bool]
+    active_groups: Dict[int, bool]
+    system_state: int
+    system_state_text: str
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'CentralStatus':
         """Convert the dictionnary to response object."""
+
+        system_state = data.get("systemState")
+        system_state_text = data.get("systemStateText")
+
+        if system_state is None:
+            raise MissingFieldResponseError("Field 'systemState' is missing in response.")
+        if system_state_text is None:
+            raise MissingFieldResponseError("Field 'systemStateText' is missing in response.")
+
         return CentralStatus(
             main_power_supply_alert=data.get("mainPowerSupplyAlert"),
             secondary_power_supply_alert=data.get("secondaryPowerSupplyAlert"),
@@ -262,19 +329,19 @@ class CentralStatus:
             autoprotection_wired_alert=data.get("autoprotectionWiredAlert"),
             radio_alert=data.get("radioAlert"),
             active_groups={int(k): v for k, v in data['activeGroups'].items()},
-            system_state=data.get("systemState"),
-            system_state_text=data.get("systemStateText")
+            system_state=system_state,
+            system_state_text=system_state_text
         )
 
 
 @dataclass
 class CommandStatus:
     """The command status."""
-    power_supply_alert: bool | None
-    secondary_power_supply_alert: bool | None
-    autoprotection_mechanical_alert: bool | None
-    radio_alert: bool | None
-    index: int | None
+    power_supply_alert: Optional[bool]
+    secondary_power_supply_alert: Optional[bool]
+    autoprotection_mechanical_alert: Optional[bool]
+    radio_alert: Optional[bool]
+    index: Optional[int]
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'CommandStatus':
@@ -290,15 +357,15 @@ class CommandStatus:
 @dataclass
 class TransmitterStatus:
     """The tranmitter status."""
-    media_adsl_alert: bool | None
-    media_gsm_alert: bool | None
-    media_rtc_alert: bool | None
-    out_of_order_alert: bool | None
-    main_power_supply_alert: bool | None
-    secondary_power_supply_alert: bool | None
-    autoprotection_mechanical_alert: bool | None
-    radio_alert: bool | None
-    index: int | None
+    media_adsl_alert: Optional[bool]
+    media_gsm_alert: Optional[bool]
+    media_rtc_alert: Optional[bool]
+    out_of_order_alert: Optional[bool]
+    main_power_supply_alert: Optional[bool]
+    secondary_power_supply_alert: Optional[bool]
+    autoprotection_mechanical_alert: Optional[bool]
+    radio_alert: Optional[bool]
+    index: Optional[int]
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'TransmitterStatus':
@@ -318,16 +385,16 @@ class TransmitterStatus:
 @dataclass
 class SensorStatus:
     """The sensor status."""
-    power_supply_alert: bool | None
-    secondary_power_supply_alert: bool | None
-    autoprotection_mechanical_alert: bool | None
-    radio_alert: bool | None
-    sensor_alert: bool | None
-    loop_alert: bool | None
-    mask_alert: bool | None
-    ejected: bool | None
-    number_of_supervisions: int | None
-    index: int | None
+    power_supply_alert: Optional[bool]
+    secondary_power_supply_alert: Optional[bool]
+    autoprotection_mechanical_alert: Optional[bool]
+    radio_alert: Optional[bool]
+    sensor_alert: Optional[bool]
+    loop_alert: Optional[bool]
+    mask_alert: Optional[bool]
+    ejected: Optional[bool]
+    number_of_supervisions: Optional[int]
+    index: Optional[int]
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'SensorStatus':
@@ -366,11 +433,17 @@ class GetSystemAlertsResponse:
 @dataclass
 class LogoutResponse:
     """Describe the Logout response."""
-    status: str | None
+    status: str
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'LogoutResponse':
         """Convert the dictionnary to response object."""
+
+        status = data.get("status")
+
+        if status is None:
+            raise MissingFieldResponseError("Field 'status' is missing in response.")
+
         return LogoutResponse(
-            status=data.get("status")
+            status=status
         )
