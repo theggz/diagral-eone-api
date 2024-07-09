@@ -18,4 +18,8 @@ class AuthorizationError(DiagralCloudError):
 
 class TooManyRequestsError(DiagralCloudError):
     """Exception raised when too many requests have been made."""
+
+
+class MissingFieldResponseError(DiagralCloudError):
+    """Exception raised when a field is missing in the response."""
     
